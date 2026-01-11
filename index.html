@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>CRM Cliente</title>
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --shadow:0 10px 24px rgba(15,23,42,.08);
+      --r:18px;
+
+      --blue:#2563eb;  --blueSoft:#eff6ff;
+      --green:#16a34a; --greenSoft:#ecfdf5;
+      --amber:#f59e0b; --amberSoft:#fffbeb;
+      --red:#ef4444;   --redSoft:#fff1f2;
+      --purple:#7c3aed;--purpleSoft:#f5f3ff;
+
+      --safeB: env(safe-area-inset-bottom, 0px);
+      --safeT: env(safe-area-inset-top, 0px);
+    }
+
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+
+    .top{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(246,247,251,.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: calc(14px + var(--safeT)) 12px 12px;
+    }
+    .titleRow{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .h1{margin:0;font-size:20px;font-weight:1100;line-height:1.05}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px;font-weight:900;line-height:1.2}
+
+    /* TABS */
+    .tabs{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      padding:14px 2px 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{
+      flex:0 0 auto;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:14px 18px;
+      border-radius:999px;
+      font-size:15px;
+      font-weight:1100;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+      min-height:52px;
+    }
+    .tab.active{
+      border-color: rgba(37,99,235,.26);
+      background: var(--blueSoft);
+      color: var(--blue);
+    }
+
+    .wrap{
+      padding: 12px 12px calc(160px + var(--safeB));
+    }
+
+    .err{
+      border:1px solid #fecaca;
+      background:#fff1f2;
+      color:#7f1d1d;
+      padding:12px 12px;
+      border-radius:14px;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top: 12px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .head{
+      padding: 16px 14px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      background: linear-gradient(180deg, #fff, #fbfcff);
+      user-select:none;
+    }
+    .headBtn{
+      flex:1;
+      display:block;
+      text-align:left;
+      border:0;
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+    }
+
+    .left{min-width:0}
+
+    .t{
+      margin:0;
+      font-size:18px;
+      font-weight:1200;
+      letter-spacing:.1px;
+      line-height:1.15;
+    }
+
+    .meta{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:950;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      line-height:1.25;
+    }
+
+    .chips{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:1100;
+      border:1px solid var(--line);
+      background:#fff;
+      white-space:nowrap;
+      min-height:40px;
+    }
+    .chip.ok{background:var(--greenSoft);color:var(--green);border-color:rgba(22,163,74,.18)}
+    .chip.warn{background:var(--amberSoft);color:var(--amber);border-color:rgba(245,158,11,.18)}
+    .chip.bad{background:var(--redSoft);color:var(--red);border-color:rgba(239,68,68,.18)}
+    .chip.blue{background:var(--blueSoft);color:var(--blue);border-color:rgba(37,99,235,.18)}
+    .chip.purple{background:var(--purpleSoft);color:var(--purple);border-color:rgba(124,58,237,.18)}
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex:0 0 auto;
+    }
+
+    .selBox{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+    .selBox input{
+      width:26px;
+      height:26px;
+      accent-color: var(--blue);
+    }
+
+    .chev{
+      width:52px;height:52px;border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+      font-weight:1200;
+      color:#0f172a;
+      font-size:18px;
+    }
+    .card.open .chev{transform: rotate(180deg)}
+
+    .body{
+      display:none;
+      padding: 14px 14px 16px;
+      border-top: 1px solid var(--line);
+    }
+    .card.open .body{display:block}
+
+    .kvline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .kv{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      background:#fff;
+      display:inline-flex;
+      gap:8px;
+      align-items:baseline;
+      font-size:15px;
+    }
+    .k{color:var(--muted);font-weight:1100;font-size:13px}
+    .v{font-weight:1100}
+
+    .note{
+      border:1px dashed rgba(37,99,235,.25);
+      background:rgba(37,99,235,.04);
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:15px;
+      white-space:pre-wrap;
+      line-height:1.25;
+    }
+    .note + .note{margin-top:10px}
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:12px;
+    }
+    a.link{
+      width:100%;
+      text-align:center;
+      color: var(--blue);
+      background: var(--blueSoft);
+      border: 1px solid rgba(37,99,235,.18);
+      border-radius: 16px;
+      padding: 16px 14px;
+      text-decoration:none;
+      font-weight:1200;
+      font-size:16px;
+      min-height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .bottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 60;
+      padding: 10px 12px calc(12px + var(--safeB));
+      background: rgba(246,247,251,.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--line);
+    }
+    .count{
+      font-size:14px;
+      font-weight:1100;
+      color: var(--muted);
+      margin-bottom:10px;
+    }
+    .btns{
+      display:flex;
+      gap:10px;
+      width:100%;
+    }
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding: 16px 12px;
+      border-radius: 16px;
+      font-size:15px;
+      font-weight:1200;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+      white-space:nowrap;
+      flex:1 1 0;
+      min-height:56px;
+    }
+    .btn.primary{border-color:rgba(37,99,235,.26); background: var(--blueSoft); color: var(--blue)}
+    .btn.purple{border-color:rgba(124,58,237,.22); background: var(--purpleSoft); color: var(--purple)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+
+    /* overlay loading */
+    .overlay{
+      position:fixed; inset:0;
+      background: rgba(15,23,42,.35);
+      z-index: 200;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+    }
+    .overlay.show{display:flex}
+    .ovCard{
+      width: 100%;
+      max-width: 420px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(15,23,42,.25);
+      padding: 16px 16px;
+    }
+    .ovTitle{margin:0;font-weight:1200;font-size:16px}
+    .ovSub{margin:8px 0 0;color:var(--muted);font-weight:900;font-size:13px;line-height:1.25}
+    .bar{
+      height:10px;border-radius:999px;background:#eef2ff;border:1px solid #e5e7eb;
+      overflow:hidden;margin-top:14px;
+    }
+    .bar > div{
+      height:100%; width:40%;
+      background: linear-gradient(90deg, #2563eb, #7c3aed);
+      border-radius:999px;
+      animation: move 1.1s infinite linear;
+    }
+    @keyframes move { 0%{transform:translateX(-80%)} 100%{transform:translateX(260%)} }
+
+    /* modal login */
+    .modal{
+      position:fixed; inset:0;
+      z-index: 250;
+      background: rgba(15,23,42,.35);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:18px;
+    }
+    .modal.show{display:flex}
+    .mCard{
+      width:100%;
+      max-width:420px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow: 0 18px 40px rgba(15,23,42,.25);
+      padding:16px 16px;
+    }
+    .mTitle{margin:0;font-weight:1200;font-size:18px}
+    .mSub{margin:8px 0 0;color:var(--muted);font-weight:900;font-size:13px;line-height:1.25}
+    .field{margin-top:12px}
+    .label{display:block;font-weight:1100;color:var(--muted);font-size:13px;margin-bottom:6px}
+    .input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 12px;
+      font-size:16px;
+      font-weight:900;
+      outline:none;
+    }
+    .row{display:flex; gap:10px; margin-top:12px}
+    .btn2{
+      flex:1;
+      min-height:56px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:15px;
+      font-weight:1200;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+    .btn2.primary{border-color:rgba(37,99,235,.26); background: var(--blueSoft); color: var(--blue)}
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <div class="titleRow">
+      <div>
+        <p class="h1" id="appTitle">CRM Cliente</p>
+        <p class="sub" id="appSub">Carregando…</p>
+      </div>
+      <!-- SID escondido (não aparece pro pax) -->
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <div class="wrap">
+    <div id="error" class="err" style="display:none"></div>
+    <div id="content" class="list"></div>
+  </div>
+
+  <div class="bottom">
+    <div class="count" id="selCount">0 selecionados</div>
+    <div class="btns">
+      <button class="btn primary" id="btnPdfSel" onclick="exportPdfSelected()" disabled>PDF selecionados</button>
+      <button class="btn" onclick="exportPdfAll()">PDF aba</button>
+      <button class="btn purple" onclick="exportFull()">PDF COMPLETO</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="ovCard">
+      <p class="ovTitle" id="ovTitle">Processando…</p>
+      <p class="ovSub" id="ovSub">Aguarde, estamos gerando seu arquivo.</p>
+      <div class="bar"><div></div></div>
+    </div>
+  </div>
+
+  <div class="modal" id="loginModal">
+    <div class="mCard">
+      <p class="mTitle">Acesso</p>
+      <p class="mSub" id="loginHint">Entre com usuário e senha.</p>
+
+      <div class="field">
+        <span class="label">Usuário</span>
+        <input class="input" id="loginUser" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <span class="label">Senha</span>
+        <input class="input" id="loginPass" type="password" autocomplete="current-password" />
+      </div>
+
+      <div class="row">
+        <button class="btn2 primary" onclick="doLogin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /********************
+   * CONFIG (GitHub)
+   ********************/
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyzR-GumTo4rkGojAkXT8WWxEmwtUCuPHI3R34PiL2CULgJg2a0xT_uaYZ3xWvwNzpI/exec";
+
+  // sid escondido: vem pela URL do GitHub: ?sid=SEU_ID
+  // Ex: https://seusite.github.io/app/?sid=1SKns...
+  const SID = (new URLSearchParams(location.search).get('sid') || '').trim();
+
+  let DB = null;
+  let currentSheet = null;
+  const selectedIdx = new Set();
+
+  // sessão
+  let SESSION_TOKEN = localStorage.getItem('crm_token_' + SID) || '';
+  let AUTH_REQUIRED = false;
+
+  boot();
+
+  function boot(){
+    if (!SID) {
+      showError('Faltou "sid" na URL. Exemplo: ?sid=ID_DA_PLANILHA');
+      return;
+    }
+
+    setOverlay(true, 'Verificando acesso…', 'Aguarde.');
+
+    callApi('checkSession', { sid: SID, token: SESSION_TOKEN })
+      .then(res => {
+        setOverlay(false);
+
+        if (!res || !res.ok) {
+          AUTH_REQUIRED = true;
+          openLoginModal(true);
+          document.getElementById('appSub').textContent = 'Login necessário';
+          return;
+        }
+
+        AUTH_REQUIRED = !!res.authRequired;
+        if (res.clientName) document.getElementById('appTitle').textContent = res.clientName;
+
+        if (!AUTH_REQUIRED) {
+          loadData();
+          return;
+        }
+
+        if (SESSION_TOKEN) loadData();
+        else {
+          openLoginModal(true);
+          document.getElementById('appSub').textContent = 'Login necessário';
+        }
+      })
+      .catch(() => {
+        setOverlay(false);
+        AUTH_REQUIRED = true;
+        openLoginModal(true);
+        document.getElementById('appSub').textContent = 'Login necessário';
+      });
+  }
+
+  function openLoginModal(show){
+    document.getElementById('loginModal').classList.toggle('show', !!show);
+    if (show) {
+      const savedUser = localStorage.getItem('crm_user_' + SID) || '';
+      if (savedUser) document.getElementById('loginUser').value = savedUser;
+      setTimeout(() => document.getElementById('loginUser').focus(), 50);
+    }
+  }
+
+  function doLogin(){
+    const user = (document.getElementById('loginUser').value || '').trim();
+    const pass = (document.getElementById('loginPass').value || '').trim();
+    if (!user || !pass) { alert('Preencha usuário e senha.'); return; }
+
+    setOverlay(true, 'Entrando…', 'Validando usuário e senha.');
+
+    callApi('validateLogin', { sid: SID, user, pass })
+      .then(res => {
+        setOverlay(false);
+
+        if (!res || !res.ok) {
+          alert(res?.error || 'Falha no login.');
+          return;
+        }
+
+        if (res.clientName) document.getElementById('appTitle').textContent = res.clientName;
+
+        if (res.authRequired) {
+          SESSION_TOKEN = res.token || '';
+          localStorage.setItem('crm_token_' + SID, SESSION_TOKEN);
+          localStorage.setItem('crm_user_' + SID, user);
+        }
+
+        openLoginModal(false);
+        loadData();
+      })
+      .catch(err => {
+        setOverlay(false);
+        alert(String(err));
+      });
+  }
+
+  function loadData(){
+    setOverlay(true, 'Carregando…', 'Lendo dados da planilha.');
+
+    callApi('getSpreadsheetData', { sid: SID, token: SESSION_TOKEN })
+      .then(onData)
+      .catch(() => {
+        setOverlay(false);
+        openLoginModal(true);
+        document.getElementById('appSub').textContent = 'Sessão expirada';
+      });
+  }
+
+  function onData(res){
+    setOverlay(false);
+
+    if (!res || !res.ok) {
+      if (res?.authRequired) {
+        openLoginModal(true);
+        document.getElementById('appSub').textContent = 'Login necessário';
+        return;
+      }
+      showError(res?.error || 'Erro ao carregar planilha.');
+      return;
+    }
+
+    DB = res;
+    document.getElementById('appTitle').textContent = res.clientName || res.title || 'CRM Cliente';
+    document.getElementById('appSub').textContent = 'Dados carregados';
+
+    const names = Object.keys(res.sheets || {});
+    buildTabs(names);
+
+    const prefer = names.find(n => n.toLowerCase() === 'passeios') || names[0];
+    openSheet(prefer);
+  }
+
+  function buildTabs(names){
+    const tabs = document.getElementById('tabs');
+    tabs.innerHTML = '';
+
+    const loginBtn = document.createElement('button');
+    loginBtn.className = 'tab';
+    loginBtn.textContent = 'Login';
+    loginBtn.onclick = () => openLoginSettings();
+    tabs.appendChild(loginBtn);
+
+    names.forEach(n => {
+      const b = document.createElement('button');
+      b.className = 'tab';
+      b.textContent = n;
+      b.onclick = () => openSheet(n);
+      tabs.appendChild(b);
+    });
+  }
+
+  function openLoginSettings(){
+    currentSheet = '__LOGIN__';
+    selectedIdx.clear();
+    syncSelectionUI();
+
+    [...document.querySelectorAll('.tab')].forEach(t => t.classList.toggle('active', t.textContent === 'Login'));
+
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="card open">
+        <div class="head">
+          <div class="left">
+            <p class="t">Alterar Login</p>
+            <div class="meta"><span>Atualiza a aba "login" da planilha</span></div>
+          </div>
+          <div class="right"><div class="chev">⌄</div></div>
+        </div>
+        <div class="body" style="display:block">
+          <div class="note"><b>Regras:</b>\n- letras e números\n- simples\n- não compartilhe com terceiros</div>
+
+          <div class="kvline" style="margin-top:12px">
+            <div style="width:100%">
+              <div class="k" style="margin-bottom:6px">Usuário</div>
+              <input class="input" id="newUser" placeholder="novo usuário" />
+            </div>
+            <div style="width:100%">
+              <div class="k" style="margin-bottom:6px">Senha</div>
+              <input class="input" id="newPass" placeholder="nova senha" type="password" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" style="width:100%" onclick="saveLogin()">Salvar login/senha</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('appSub').textContent = 'Configurações de acesso';
+  }
+
+  function saveLogin(){
+    const user = (document.getElementById('newUser').value || '').trim();
+    const pass = (document.getElementById('newPass').value || '').trim();
+    if (!user || !pass) { alert('Preencha usuário e senha.'); return; }
+    if (!/^[a-zA-Z0-9]+$/.test(user) || !/^[a-zA-Z0-9]+$/.test(pass)) {
+      alert('Use somente letras e números (sem espaços).');
+      return;
+    }
+
+    setOverlay(true, 'Salvando…', 'Atualizando login na planilha.');
+
+    callApi('updateLogin', { sid: SID, token: SESSION_TOKEN, user, pass })
+      .then(res => {
+        setOverlay(false);
+        if (!res || !res.ok) { alert(res?.error || 'Falha ao salvar.'); return; }
+        alert('Login atualizado com sucesso.');
+        localStorage.setItem('crm_user_' + SID, user);
+      })
+      .catch(err => {
+        setOverlay(false);
+        alert(String(err));
+      });
+  }
+
+  function openSheet(name){
+    currentSheet = name;
+    selectedIdx.clear();
+    syncSelectionUI();
+    [...document.querySelectorAll('.tab')].forEach(t => t.classList.toggle('active', t.textContent === name));
+    renderCurrent();
+  }
+
+  function renderCurrent(){
+    const data = DB.sheets[currentSheet] || { rows:[], links:[] };
+    const rows = data.rows || [];
+    const links = data.links || [];
+
+    const content = document.getElementById('content');
+    content.innerHTML = '';
+
+    if (!rows.length) {
+      content.innerHTML = `<div class="err"><b>Aba "${esc(currentSheet)}"</b> sem registros.</div>`;
+      return;
+    }
+
+    rows.forEach((row, idx) => {
+      content.appendChild(renderCard(row, links[idx] || {}, idx));
+    });
+  }
+
+  function renderCard(row, rowLinks, idx){
+    const sheetLc = String(currentSheet||'').toLowerCase();
+
+    const status = getField(row, ['status']);
+    const pagamento = getField(row, ['pagamento']);
+    const valor = getField(row, ['valor','preco','precio','total']);
+    const data = getField(row, ['data','fecha']);
+
+    const vooNum = getField(row, ['numero do voo','número do voo','vuelo','flight','numero']);
+    const origem = getField(row, ['origem','origen','from']);
+    const destino = getField(row, ['destino','to']);
+    const saida = getField(row, ['hora de saida','hora de saída','salida','departure']);
+    const chegada = getField(row, ['hora de chegada','llegada','arrival']);
+
+    const passeio = getField(row, ['passeio','actividad','atividade']);
+    const pickup = getField(row, ['pick up','pickup','pick-up']);
+    const turno = getField(row, ['turno']);
+    const inclui = getField(row, ['inclui','incluye']);
+    const obs = getField(row, ['obs','observacoes','observações','observaciones','observacao']);
+    const link = getField(row, ['link','enlace','url','comprovante','voucher','boleto','foto do boleto']);
+
+    const unifiedUrl = firstUrl_(rowLinks) || (String(link||'').trim().startsWith('http') ? String(link).trim() : '');
+    const obsShort = obs ? obs.split('\n').join(' ').slice(0, 70) : '';
+
+    let titulo = passeio || '';
+    if (!titulo && (sheetLc === 'voos' || sheetLc.includes('voo'))) {
+      titulo = vooNum ? `Voo ${vooNum}` : 'Voo';
+    }
+    if (!titulo) titulo = pickFirstValue(row) || `Item #${idx+1}`;
+
+    const chips = [];
+    if (sheetLc === 'voos' || sheetLc.includes('voo')) {
+      if (vooNum) chips.push(chipHtml(vooNum, 'purple'));
+      if (data) chips.push(chipHtml(data, 'warn'));
+      if (saida) chips.push(chipHtml('Saída: ' + saida, 'blue'));
+      if (chegada) chips.push(chipHtml('Chegada: ' + chegada, 'blue'));
+    } else {
+      if (status) chips.push(chipHtml(status, statusChipClass(status)));
+      if (pagamento) chips.push(chipHtml(pagamento, payChipClass(pagamento)));
+      if (valor) chips.push(chipHtml(valor, 'purple'));
+      if (turno) chips.push(chipHtml(turno, 'blue'));
+    }
+
+    const metaParts = [];
+    if (sheetLc === 'voos' || sheetLc.includes('voo')) {
+      if (origem || destino) metaParts.push(`🧭 ${esc(origem)} → ${esc(destino)}`);
+      if (obsShort) metaParts.push(`📝 ${esc(obsShort)}${obs.length > 70 ? '…' : ''}`);
+    } else {
+      if (data) metaParts.push(`📅 ${esc(data)}`);
+      if (pickup) metaParts.push(`🕒 Pick up: ${esc(pickup)}`);
+      if (obsShort) metaParts.push(`📝 ${esc(obsShort)}${obs.length > 70 ? '…' : ''}`);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.idx = String(idx);
+
+    const head = document.createElement('div');
+    head.className = 'head';
+
+    const btn = document.createElement('button');
+    btn.className = 'headBtn';
+    btn.type = 'button';
+    btn.onclick = () => card.classList.toggle('open');
+
+    btn.innerHTML = `
+      <div class="left">
+        <p class="t">${esc(titulo)}</p>
+        <div class="meta">${metaParts.map(x => `<span>${x}</span>`).join('')}</div>
+        <div class="chips">${chips.join('')}</div>
+      </div>
+    `;
+
+    const right = document.createElement('div');
+    right.className = 'right';
+    right.innerHTML = `
+      <label class="selBox">
+        <input type="checkbox" aria-label="Selecionar" onchange="toggleSel(${idx}, this.checked)">
+      </label>
+      <div class="chev">⌄</div>
+    `;
+
+    head.appendChild(btn);
+    head.appendChild(right);
+
+    const body = document.createElement('div');
+    body.className = 'body';
+
+    const extraKv = [];
+    if (sheetLc === 'voos' || sheetLc.includes('voo')) {
+      if (data) extraKv.push(kvHtml('Data', data));
+      if (origem) extraKv.push(kvHtml('Origem', origem));
+      if (destino) extraKv.push(kvHtml('Destino', destino));
+      if (saida) extraKv.push(kvHtml('Saída', saida));
+      if (chegada) extraKv.push(kvHtml('Chegada', chegada));
+    } else {
+      if (data) extraKv.push(kvHtml('Data', data));
+      if (pickup) extraKv.push(kvHtml('Pick up', pickup));
+    }
+
+    body.innerHTML = `
+      <div class="kvline">${extraKv.join('')}</div>
+
+      ${inclui ? `<div class="note"><b>Inclui:</b>\n${esc(inclui)}</div>` : ''}
+      ${obs ? `<div class="note"><b>OBS:</b>\n${esc(obs)}</div>` : ''}
+
+      <div class="actions">
+        ${unifiedUrl ? `<a class="link" href="${escAttr(unifiedUrl)}" target="_blank">🔗 Abrir link/anexo</a>` : ''}
+      </div>
+    `;
+
+    card.appendChild(head);
+    card.appendChild(body);
+    return card;
+  }
+
+  function toggleSel(idx, on){
+    if (on) selectedIdx.add(idx);
+    else selectedIdx.delete(idx);
+    syncSelectionUI();
+  }
+
+  function syncSelectionUI(){
+    const n = selectedIdx.size;
+    document.getElementById('selCount').textContent = `${n} selecionado${n===1?'':'s'}`;
+    document.getElementById('btnPdfSel').disabled = (n === 0);
+
+    document.querySelectorAll('.card input[type="checkbox"]').forEach(cb => cb.checked = false);
+    selectedIdx.forEach(i => {
+      const card = document.querySelector(`.card[data-idx="${i}"]`);
+      const cb = card ? card.querySelector('input[type="checkbox"]') : null;
+      if (cb) cb.checked = true;
+    });
+  }
+
+  /* ===== PDFs (mantém funções: exportPasseiosPdf / exportFullVoucherPdf) ===== */
+
+  function exportPdfSelected(){
+    if (!selectedIdx.size) return;
+    const rowIdx0 = [...selectedIdx];
+    callPdfForSheet(rowIdx0);
+  }
+
+  function exportPdfAll(){
+    if (currentSheet === '__LOGIN__') return;
+    const rows = (DB.sheets[currentSheet]?.rows || []);
+    const rowIdx0 = rows.map((_,i)=>i);
+    callPdfForSheet(rowIdx0);
+  }
+
+  function callPdfForSheet(rowIdx0){
+    if (currentSheet === '__LOGIN__') return;
+
+    setOverlay(true, 'Gerando PDF…', 'Aguarde, preparando arquivo.');
+    document.getElementById('appSub').textContent = 'Gerando PDF…';
+
+    callApi('exportPasseiosPdf', { sid: SID, token: SESSION_TOKEN, sheetName: currentSheet, rowIdx0 })
+      .then(handleDownload)
+      .catch(failDownload);
+  }
+
+  function exportFull(){
+    setOverlay(true, 'Gerando PDF COMPLETO…', 'Voucher + recibo. Aguarde.');
+    document.getElementById('appSub').textContent = 'Gerando PDF COMPLETO…';
+
+    callApi('exportFullVoucherPdf', { sid: SID, token: SESSION_TOKEN })
+      .then(handleDownload)
+      .catch(failDownload);
+  }
+
+  function handleDownload(res){
+    setOverlay(false);
+
+    if (!res || !res.ok) {
+      document.getElementById('appSub').textContent = 'Falha ao exportar';
+      alert(res?.error || 'Erro ao exportar.');
+      if ((res?.error || '').toLowerCase().includes('sessão')) {
+        SESSION_TOKEN = '';
+        localStorage.removeItem('crm_token_' + SID);
+        openLoginModal(true);
+      }
+      return;
+    }
+
+    document.getElementById('appSub').textContent = 'PDF gerado. Abrindo…';
+    window.open(res.downloadUrl, '_blank', 'noopener');
+  }
+
+  function failDownload(err){
+    setOverlay(false);
+    document.getElementById('appSub').textContent = 'Falha ao exportar';
+    alert(String(err));
+  }
+
+  /* ===== API call via fetch (GitHub -> GAS) =====
+     Requisito: seu GAS precisa suportar ?fn=... via doGet/doPost.
+     Se seu Code.gs atual NÃO tem isso, eu te mando o patch mínimo no próximo passo.
+  */
+  async function callApi(fn, payload){
+    const u = new URL(WEBAPP_URL);
+    u.searchParams.set('fn', fn);
+
+    const resp = await fetch(u.toString(), {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload || {})
+    });
+
+    // Se falhar CORS/redirect, tenta GET (fallback)
+    if (!resp.ok) {
+      const g = new URL(WEBAPP_URL);
+      g.searchParams.set('fn', fn);
+      g.searchParams.set('payload', encodeURIComponent(JSON.stringify(payload || {})));
+      const r2 = await fetch(g.toString(), { method:'GET' });
+      return await r2.json();
+    }
+    return await resp.json();
+  }
+
+  function setOverlay(on, title, sub){
+    const ov = document.getElementById('overlay');
+    ov.classList.toggle('show', !!on);
+    if (title) document.getElementById('ovTitle').textContent = title;
+    if (sub) document.getElementById('ovSub').textContent = sub;
+  }
+
+  function showError(msg){
+    const el = document.getElementById('error');
+    el.style.display = 'block';
+    el.innerHTML = `<b>Erro:</b> ${esc(String(msg||''))}`;
+    document.getElementById('appSub').textContent = 'Falha ao carregar';
+  }
+
+  /* helpers */
+  function firstUrl_(obj){
+    if (!obj) return '';
+    const k = Object.keys(obj).find(x => String(obj[x]||'').trim().startsWith('http'));
+    return k ? String(obj[k]).trim() : '';
+  }
+  function getField(row, names){
+    const keys = Object.keys(row || {});
+    for (const want of names){
+      const k = keys.find(x => String(x).trim().toLowerCase() === String(want).trim().toLowerCase());
+      if (k && String(row[k] ?? '').trim() !== '') return String(row[k]).trim();
+    }
+    return '';
+  }
+  function pickFirstValue(obj){
+    for (const k of Object.keys(obj||{})){
+      const v = String(obj[k] ?? '').trim();
+      if (v) return v;
+    }
+    return '';
+  }
+  function kvHtml(k,v){
+    return `<div class="kv"><span class="k">${esc(k)}:</span> <span class="v">${esc(String(v||''))}</span></div>`;
+  }
+  function chipHtml(txt, cls){
+    return `<span class="chip ${cls}">${esc(txt)}</span>`;
+  }
+  function statusChipClass(s){
+    const x = String(s||'').toLowerCase();
+    if (x.includes('confirm')) return 'ok';
+    if (x.includes('pend')) return 'warn';
+    if (x.includes('cancel')) return 'bad';
+    return 'blue';
+  }
+  function payChipClass(s){
+    const x = String(s||'').toLowerCase();
+    if (x.includes('100') || x.includes('pago') || x.includes('paid')) return 'ok';
+    if (x.includes('pend')) return 'warn';
+    return 'blue';
+  }
+  function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
